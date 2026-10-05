@@ -1,21 +1,21 @@
 # frozen_string_literal: true
 
-require_relative "lib/deliverance/version"
+require_relative 'lib/deliverance/version'
 
 Gem::Specification.new do |spec|
-  spec.name = "deliverance"
+  spec.name = 'deliverance'
   spec.version = Deliverance::VERSION
-  spec.authors = ["sophiathedev"]
-  spec.email = ["thedevguy1337@gmail.com"]
+  spec.authors = ['sophiathedev']
+  spec.email = ['thedevguy1337@gmail.com']
 
-  spec.summary = "TODO: Write a short summary, because RubyGems requires one."
-  spec.description = "TODO: Write a longer description or delete this line."
+  spec.summary = 'TODO: Write a short summary, because RubyGems requires one.'
+  spec.description = 'TODO: Write a longer description or delete this line.'
   spec.homepage = "TODO: Put your gem's website or public repo URL here."
-  spec.required_ruby_version = ">= 3.2.0"
-  spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
-  spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://codeberg.org/sophiathedev/deliverance"
-  spec.metadata["changelog_uri"] = "https://codeberg.org/sophiathedev/deliverance/src/branch/main/CHANGELOG.md"
+  spec.required_ruby_version = '>= 3.2.0'
+  spec.metadata['allowed_push_host'] = "TODO: Set to your gem server 'https://example.com'"
+  spec.metadata['homepage_uri'] = spec.homepage
+  spec.metadata['source_code_uri'] = 'https://codeberg.org/sophiathedev/deliverance'
+  spec.metadata['changelog_uri'] = 'https://codeberg.org/sophiathedev/deliverance/src/branch/main/CHANGELOG.md'
 
   # Uncomment the line below to require MFA for gem pushes.
   # This helps protect your gem from supply chain attacks by ensuring
@@ -32,9 +32,9 @@ Gem::Specification.new do |spec|
         f.start_with?(*%w[bin/ Gemfile .gitignore .rspec spec/ .github/])
     end
   end
-  spec.bindir = "exe"
+  spec.bindir = 'exe'
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
-  spec.require_paths = ["lib"]
+  spec.require_paths = ['lib']
 
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "example-gem", "~> 1.0"
