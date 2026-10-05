@@ -2,10 +2,11 @@
 
 RSpec.describe Deliverance do
   it 'has a version number' do
-    expect(Deliverance::VERSION).not_to be nil
+    expect(Deliverance::VERSION).not_to be_nil
   end
 
-  it 'does something useful' do
-    expect(false).to eq(true)
+  it 'defines a standard error class' do
+    expect(Deliverance::Error.new).to be_a(StandardError)
   end
 end
+

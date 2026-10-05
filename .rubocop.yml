@@ -1,0 +1,204 @@
+# ==============================================================================
+# Modern RuboCop Configuration (Ruby 3.2+ / 3.3+ / 3.4+)
+# Focused on Performance, Readability, and Modern Idiomatic Ruby
+# ==============================================================================
+
+# RuboCop 1.72+ plugin system (powered by lint_roller)
+plugins:
+  - rubocop-performance
+  - rubocop-rake
+  - rubocop-rspec
+
+AllCops:
+  # Enable all new cops introduced in newer RuboCop releases automatically
+  NewCops: enable
+
+  # Match minimum supported Ruby version (aligns with gemspec required_ruby_version)
+  TargetRubyVersion: 3.2
+
+  # Cache results for faster subsequent runs
+  UseCache: true
+  CacheRootDirectory: tmp
+
+  # Clean terminal output
+  SuggestExtensions: false
+  DisplayCopNames: true
+  DisplayStyleGuide: true
+  ExtraDetails: true
+
+  # Ignore directories that do not belong to application logic
+  Exclude:
+    - 'vendor/**/*'
+    - 'tmp/**/*'
+    - 'node_modules/**/*'
+    - '.git/**/*'
+
+# ==============================================================================
+# Performance Cops (rubocop-performance)
+# Highly recommended for high-throughput, low-memory Ruby applications
+# ==============================================================================
+
+# Prefer Hash#fetch / Hash#key? over Hash#keys.include? (O(1) vs O(N) allocation)
+Performance/InefficientHashSearch:
+  Enabled: true
+
+# Avoid allocating new literal collections (Array/Hash) inside loops
+Performance/CollectionLiteralInLoop:
+  Enabled: true
+
+# Prefer Enumerable#detect/find over Enumerable#select.first
+Performance/Detect:
+  Enabled: true
+
+# Optimize string operations (prefer tr/delete_prefix/delete_suffix over regex/gsub)
+Performance/StringReplacement:
+  Enabled: true
+
+Performance/DeletePrefix:
+  Enabled: true
+
+Performance/DeleteSuffix:
+  Enabled: true
+
+Performance/StartWith:
+  Enabled: true
+
+Performance/EndWith:
+  Enabled: true
+
+Performance/DoubleStartEndWith:
+  Enabled: true
+
+# Prefer Enumerable#count { ... } over select.size
+Performance/Count:
+  Enabled: true
+
+# Prefer Array#flat_map over map + flatten(1) to avoid intermediate array allocations
+Performance/FlatMap:
+  Enabled: true
+
+# Prefer reverse_each over reverse.each to save array duplication
+Performance/ReverseEach:
+  Enabled: true
+
+# Prefer times.map over (0...n).map
+Performance/TimesMap:
+  Enabled: true
+
+# Avoid redundant String#chars before #each or #map
+Performance/RedundantStringChars:
+  Enabled: true
+
+# Prefer File.read / IO.readlines over inefficient reads
+Performance/IoReadlines:
+  Enabled: true
+
+# Avoid OpenStruct due to slow method-missing overhead and memory leaks
+Performance/OpenStruct:
+  Enabled: true
+
+# Prefer method calls with bind_call for faster dispatch
+Performance/BindCall:
+  Enabled: true
+
+# Avoid redundant regex argument when plain string suffices
+Performance/RedundantSplitRegexpArgument:
+  Enabled: true
+
+# ==============================================================================
+# Modern Ruby & Memory Performance (Core RuboCop)
+# ==============================================================================
+
+# Crucial for Ruby 3+: Enforce frozen string literals to reduce GC allocations
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always
+
+# Disallow redundant freeze calls on literals that are already frozen
+Style/RedundantFreeze:
+  Enabled: true
+
+# String literals: single quotes for performance and simplicity
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+
+# Modern concise symbol & word arrays: %i[...] and %w[...]
+Style/SymbolArray:
+  EnforcedStyle: percent
+  MinSize: 2
+
+Style/WordArray:
+  EnforcedStyle: percent
+  MinSize: 2
+
+# Disable mandatory top-level class/module documentation to reduce boilerplate
+Style/Documentation:
+  Enabled: false
+
+# Modern Hash & Array querying
+Style/ArrayIntersect:
+  Enabled: true
+
+Style/MapToHash:
+  Enabled: true
+
+Style/MapCompactWithConditionalBlock:
+  Enabled: true
+
+Style/SelectByRegexp:
+  Enabled: true
+
+Style/FileRead:
+  Enabled: true
+
+Style/FileWrite:
+  Enabled: true
+
+# ==============================================================================
+# Layout & Code Metrics (Pragmatic defaults for modern screens & maintenance)
+# ==============================================================================
+
+Layout/LineLength:
+  AllowedPatterns:
+    - '\A# '
+    - '\A\s*#'
+    - 'https?://'
+
+Layout/TrailingEmptyLines:
+  Enabled: true
+  EnforcedStyle: final_blank_line
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - 'test/**/*'
+    - 'Rakefile'
+    - '*.gemspec'
+
+Metrics/MethodLength:
+  Max: 20
+
+Metrics/ClassLength:
+  Max: 150
+
+Metrics/AbcSize:
+  Max: 25
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+Metrics/PerceivedComplexity:
+  Max: 10
+
+# ==============================================================================
+# RSpec Cops (rubocop-rspec)
+# ==============================================================================
+
+RSpec/MultipleExpectations:
+  Max: 5
+
+RSpec/ExampleLength:
+  Max: 20
+
+RSpec/NestedGroups:
+  Max: 4
