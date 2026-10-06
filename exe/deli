@@ -3,3 +3,4 @@
 
 require 'deliverance'
 
+Deliverance::CLI.start

@@ -9,4 +9,3 @@ RSpec.describe Deliverance do
     expect(Deliverance::Error.new).to be_a(StandardError)
   end
 end
-

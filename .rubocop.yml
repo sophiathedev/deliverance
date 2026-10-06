@@ -166,7 +166,7 @@ Layout/LineLength:
 
 Layout/TrailingEmptyLines:
   Enabled: true
-  EnforcedStyle: final_blank_line
+  EnforcedStyle: final_newline
 
 Metrics/BlockLength:
   Exclude:
