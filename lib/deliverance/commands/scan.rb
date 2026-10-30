@@ -54,12 +54,15 @@ module Deliverance
         total_bytes = 0
 
         entries.each do |entry|
-          if File.file?(entry)
+          stat = File.lstat(entry)
+          if stat.file?
             files << entry
-            total_bytes += file_size(entry)
-          elsif File.directory?(entry)
+            total_bytes += stat.size
+          elsif stat.directory?
             dirs << entry
           end
+        rescue SystemCallError
+          # skip unreadable or broken symlink
         end
 
         {
@@ -69,12 +72,6 @@ module Deliverance
           directories: dirs,
           total_bytes: total_bytes
         }
-      end
-
-      def file_size(entry)
-        File.size(entry)
-      rescue SystemCallError
-        0
       end
 
       def log_verbose_stats(stats)
@@ -94,10 +91,12 @@ module Deliverance
       def format_bytes(bytes)
         if bytes < 1024
           "#{bytes} B"
-        elsif bytes < 1024 * 1024
+        elsif bytes < 1024**2
           format('%.1f KB', bytes / 1024.0)
+        elsif bytes < 1024**3
+          format('%.2f MB', bytes / (1024.0**2))
         else
-          format('%.2f MB', bytes / (1024.0 * 1024.0))
+          format('%.2f GB', bytes / (1024.0**3))
         end
       end
     end

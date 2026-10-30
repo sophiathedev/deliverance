@@ -72,7 +72,6 @@ module Deliverance
       def resolve_target_path: (String? target, Array[String] extra_args) -> String?
       def discover_entries: (String path) -> Array[String]
       def build_stats: (String path, Array[String] entries) -> Hash[Symbol, untyped]
-      def file_size: (String entry) -> Integer
       def log_verbose_stats: (Hash[Symbol, untyped] stats) -> void
       def render_summary: (Hash[Symbol, untyped] stats) -> void
       def format_bytes: (Integer bytes) -> String
