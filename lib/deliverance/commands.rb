@@ -39,6 +39,7 @@ module Deliverance
         @registry = {}
         register(Help)
         register(Exit)
+        register(Scan)
       end
     end
   end
@@ -47,3 +48,4 @@ end
 require_relative 'commands/base'
 require_relative 'commands/help'
 require_relative 'commands/exit'
+require_relative 'commands/scan'

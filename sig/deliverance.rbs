@@ -63,6 +63,20 @@ module Deliverance
     class Exit < Base
       def execute: (*untyped) -> void
     end
+
+    class Scan < Base
+      def execute: (?String? target, *String extra_args) -> Hash[Symbol, untyped]?
+
+      private
+
+      def resolve_target_path: (String? target, Array[String] extra_args) -> String?
+      def discover_entries: (String path) -> Array[String]
+      def build_stats: (String path, Array[String] entries) -> Hash[Symbol, untyped]
+      def file_size: (String entry) -> Integer
+      def log_verbose_stats: (Hash[Symbol, untyped] stats) -> void
+      def render_summary: (Hash[Symbol, untyped] stats) -> void
+      def format_bytes: (Integer bytes) -> String
+    end
   end
 
   class CLI
