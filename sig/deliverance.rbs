@@ -76,24 +76,36 @@ module Deliverance
       def render_summary: (Hash[Symbol, untyped] stats) -> void
       def format_bytes: (Integer bytes) -> String
     end
+
+    class Clear < Base
+      CLEAR_CODE: String
+
+      def execute: (*untyped) -> void
+    end
   end
 
   class CLI
     PROMPT_FORMAT: String
     EXIT_HINT: String
+    DEFAULT_HISTORY_FILE: String
+    MAX_HISTORY_ENTRIES: Integer
 
     @input_reader: untyped
     @logger: Logger
     @output: untyped
+    @history_file: String?
     @line_cnt: Integer
 
     def self.start: () -> void
-    def initialize: (?input_reader: untyped, ?logger: Logger, ?output: untyped) -> void
+    def initialize: (?input_reader: untyped, ?logger: Logger, ?output: untyped, ?history_file: String?) -> void
     def run: () -> void
 
     private
 
     def repl_loop: () -> void
+    def record_history: (String input) -> void
+    def load_history: () -> void
+    def save_history_to_file: () -> void
     def dispatch: (String input) -> void
     def parse_input: (String input) -> Array[String]
     def command_context: () -> Hash[Symbol, untyped]

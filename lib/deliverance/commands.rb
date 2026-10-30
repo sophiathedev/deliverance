@@ -40,6 +40,7 @@ module Deliverance
         register(Help)
         register(Exit)
         register(Scan)
+        register(Clear)
       end
     end
   end
@@ -49,3 +50,4 @@ require_relative 'commands/base'
 require_relative 'commands/help'
 require_relative 'commands/exit'
 require_relative 'commands/scan'
+require_relative 'commands/clear'

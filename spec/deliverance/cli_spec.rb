@@ -1,7 +1,16 @@
 # frozen_string_literal: true
 
+require 'tempfile'
+
 RSpec.describe Deliverance::CLI do
-  subject(:cli) { described_class.new(input_reader: reader, logger: logger, output: output) }
+  subject(:cli) do
+    described_class.new(
+      input_reader: reader,
+      logger: logger,
+      output: output,
+      history_file: nil
+    )
+  end
 
   let(:reader) { class_double(Readline) }
   let(:logger) { instance_double(Logger, info: true, error: true) }
@@ -20,7 +29,7 @@ RSpec.describe Deliverance::CLI do
 
   describe '#run' do
     it 'terminates when input is nil (Ctrl+D)' do
-      allow(reader).to receive(:readline).with('deli:001> ', true).and_return(nil)
+      allow(reader).to receive(:readline).with('deli:001> ', false).and_return(nil)
 
       expect { cli.run }.not_to raise_error
     end
@@ -40,6 +49,14 @@ RSpec.describe Deliverance::CLI do
       expect(output.string).to include('Available commands:')
     end
 
+    it 'executes clear command' do
+      allow(reader).to receive(:readline).and_return('clear', 'exit')
+
+      cli.run
+
+      expect(output.string).to include("\e[H\e[2J\e[3J")
+    end
+
     it 'outputs unknown command message when command is not found' do
       allow(reader).to receive(:readline).and_return('unknown_cmd', 'exit')
 
@@ -53,9 +70,9 @@ RSpec.describe Deliverance::CLI do
 
       cli.run
 
-      expect(reader).to have_received(:readline).with('deli:001> ', true).ordered
-      expect(reader).to have_received(:readline).with('deli:002> ', true).ordered
-      expect(reader).to have_received(:readline).with('deli:003> ', true).ordered
+      expect(reader).to have_received(:readline).with('deli:001> ', false).ordered
+      expect(reader).to have_received(:readline).with('deli:002> ', false).ordered
+      expect(reader).to have_received(:readline).with('deli:003> ', false).ordered
     end
 
     it 'catches Interrupt and logs exit hint without crashing' do
@@ -70,6 +87,43 @@ RSpec.describe Deliverance::CLI do
       cli.run
 
       expect(logger).to have_received(:info).with("Use 'quit' or Ctrl+D to exit!")
+    end
+  end
+
+  describe 'command history management' do
+    let(:history_file) { Tempfile.new('deli_history') }
+    let(:history_cli) do
+      described_class.new(
+        input_reader: Readline,
+        logger: logger,
+        output: output,
+        history_file: history_file.path
+      )
+    end
+
+    after do
+      history_file.close
+      history_file.unlink
+    end
+
+    it 'records commands and persists them to history file' do
+      allow(Readline).to receive(:readline).and_return('help', 'clear', 'exit')
+
+      history_cli.run
+
+      saved = File.read(history_file.path)
+      expect(saved).to include("help\nclear\nexit")
+    end
+
+    it 'loads previous commands from history file on start' do
+      history_file.write("status\nscan lib\n")
+      history_file.flush
+
+      allow(Readline).to receive(:readline).and_return('exit')
+
+      history_cli.run
+
+      expect(Readline::HISTORY.to_a).to include('status', 'scan lib')
     end
   end
 end
