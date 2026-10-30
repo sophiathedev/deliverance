@@ -1,4 +1,88 @@
 module Deliverance
   VERSION: String
-  # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+
+  LOG_TIMESTAMP_FORMAT: String
+  LOG_SEVERITY_WIDTH: Integer
+
+  Error: singleton(Deliverance::Errors::Error)
+  CommandNotFoundError: singleton(Deliverance::Errors::CommandNotFoundError)
+
+  module Errors
+    class Error < StandardError
+    end
+
+    class CommandNotFoundError < Error
+    end
+  end
+
+  def self.env: () -> String
+  def self.development?: () -> bool
+  def self.logger: () -> Logger
+  def self.logger=: (Logger logger) -> Logger
+
+  module Commands
+    def self.registry: () -> Hash[String, singleton(Base)]
+    def self.register: (singleton(Base) command_class) -> void
+    def self.unregister: (String name) -> void
+    def self.find: (String | Symbol name) -> singleton(Base)?
+    def self.all: () -> Array[singleton(Base)]
+    def self.execute: (String | Symbol name, *untyped, ?context: Hash[Symbol, untyped], **untyped) -> untyped
+    def self.reset_registry!: () -> void
+
+    class Base
+      @context: Hash[Symbol, untyped]
+
+      def self.command_name: (?String | Symbol? name) -> String
+      def self.description: (?String? desc) -> String
+      def self.usage: (?String? use) -> String
+      def self.aliases: (*String | Symbol names) -> Array[String]
+      def self.call: (*untyped, ?context: Hash[Symbol, untyped], **untyped) -> untyped
+
+      def initialize: (?Hash[Symbol, untyped] context) -> void
+      def execute: (*untyped) -> untyped
+      def run_command: (String | Symbol name, *untyped, **untyped) -> untyped
+      def logger: () -> Logger
+      def output: () -> untyped
+      def context: () -> Hash[Symbol, untyped]
+
+      private
+
+      def self.default_command_name: () -> String
+    end
+
+    class Help < Base
+      def execute: (?String? command_name) -> void
+
+      private
+
+      def list_all_commands: () -> void
+      def summary_for: (singleton(Base) cmd) -> String
+      def show_command_help: (String name) -> void
+    end
+
+    class Exit < Base
+      def execute: (*untyped) -> void
+    end
+  end
+
+  class CLI
+    PROMPT_FORMAT: String
+    EXIT_HINT: String
+
+    @input_reader: untyped
+    @logger: Logger
+    @output: untyped
+    @line_cnt: Integer
+
+    def self.start: () -> void
+    def initialize: (?input_reader: untyped, ?logger: Logger, ?output: untyped) -> void
+    def run: () -> void
+
+    private
+
+    def repl_loop: () -> void
+    def dispatch: (String input) -> void
+    def parse_input: (String input) -> Array[String]
+    def command_context: () -> Hash[Symbol, untyped]
+  end
 end

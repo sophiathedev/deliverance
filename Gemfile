@@ -23,7 +23,3 @@ group :development, :test do
   gem 'benchmark-ips', '~> 2.15', require: false
   gem 'memory_profiler', '~> 1.1', require: false
 end
-
-gem 'readline', '~> 0.0.4'
-
-gem 'tty-logger', '~> 0.6.0'

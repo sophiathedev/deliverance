@@ -1,46 +1,47 @@
 # frozen_string_literal: true
 
-require_relative 'deliverance/version'
+require 'logger'
 
-require 'readline'
-require 'tty-logger'
-require 'shellwords'
+require_relative 'deliverance/version'
+require_relative 'deliverance/errors'
+require_relative 'deliverance/commands'
+require_relative 'deliverance/cli'
 
 module Deliverance
+  Error = Errors::Error
+  CommandNotFoundError = Errors::CommandNotFoundError
+
+  LOG_TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
+  LOG_SEVERITY_WIDTH = 5
+
   class << self
     attr_writer :logger
 
+    def env
+      ENV['DELIVERANCE_ENV'] ||
+        ENV['APP_ENV'] ||
+        (File.exist?(File.expand_path('../Gemfile', __dir__)) ? 'development' : 'production')
+    end
+
+    def development?
+      env == 'development'
+    end
+
     def logger
-      @logger ||= TTY::Logger.new do |config|
-        config.metadata = %i[date time]
-      end
-    end
-  end
-
-  class CLI
-    def self.start
-      new.run
-    end
-
-    def initialize
-      @line_cnt = 0
-    end
-
-    def run
-      repl_loop
+      @logger ||= Logger.new(
+        $stdout,
+        level: development? ? Logger::DEBUG : Logger::INFO,
+        formatter: default_formatter
+      )
     end
 
     private
 
-    def repl_loop
-      loop do
-        @line_cnt += 1
-        input = Readline.readline("deli:#{@line_cnt.to_s.rjust(3, '0')}> ", true)&.strip
-        break if input.nil? # when using ctrl+d it will return nil
-
-        next if input.empty?
-      rescue Interrupt
-        Deliverance.logger.info("Use 'quit' or Ctrl+D to exit!\n")
+    def default_formatter
+      proc do |severity, datetime, _progname, msg|
+        timestamp = datetime.strftime(LOG_TIMESTAMP_FORMAT)
+        level = severity.to_s.ljust(LOG_SEVERITY_WIDTH)
+        "[#{timestamp}] [#{level}] #{msg.to_s.chomp}\n"
       end
     end
   end
