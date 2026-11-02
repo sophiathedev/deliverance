@@ -59,4 +59,37 @@ RSpec.describe Deliverance::Commands::Cve::Renderer do
       expect(described_class.format_state('RESERVED')).to eq("\e[1;33mRESERVED\e[0m")
     end
   end
+
+  describe '.render_search' do
+    let(:output) { StringIO.new }
+
+    it 'renders items showing mapped GHSA ID when present' do
+      results = {
+        total: 1,
+        items: [
+          {
+            id: 'CVE-2021-44228',
+            ghsa_id: 'GHSA-jfh8-c2jp-5v3q',
+            severity: 'CRITICAL',
+            score: 10.0,
+            published: '2021-12-10',
+            description: 'Log4Shell remote code execution in Log4j'
+          }
+        ]
+      }
+
+      described_class.render_search(results, 'log4j', output)
+      str = output.string
+
+      expect(str).to include('CVE-2021-44228 (GHSA-jfh8-c2jp-5v3q)')
+      expect(str).to include('CRITICAL (Score: 10.0)')
+    end
+
+    it 'outputs message when no CVEs are found' do
+      results = { total: 0, items: [] }
+      described_class.render_search(results, 'nonexistent', output)
+
+      expect(output.string).to include("No CVEs found matching 'nonexistent'")
+    end
+  end
 end

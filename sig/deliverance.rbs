@@ -104,9 +104,15 @@ module Deliverance
         GLOBAL_API_URL: String
 
         def self.fetch: (String ghsa_id, ?untyped client) -> Hash[String, untyped]?
+        def self.search: (String keyword, ?untyped client) -> Array[Hash[Symbol, untyped]]?
         def self.find_repo_advisory: (String ghsa_id, untyped client) -> Hash[String, untyped]?
         def self.extract_repos: (Hash[String, untyped] data) -> Array[String]
         def self.http_get: (URI::Generic uri, untyped client) -> untyped
+      end
+
+      module NvdParser
+        def self.parse: (Hash[String, untyped] data) -> Array[Hash[Symbol, untyped]]
+        def self.parse_cve_item: (Hash[String, untyped] cve) -> Hash[Symbol, untyped]
       end
 
       module Searcher
@@ -114,6 +120,7 @@ module Deliverance
         DEFAULT_RESULTS_LIMIT: Integer
 
         def self.search: (String keyword, ?untyped client, ?limit: Integer, ?start_index: Integer) -> Hash[Symbol, untyped]?
+        def self.reset_cache!: () -> void
       end
 
       module Renderer

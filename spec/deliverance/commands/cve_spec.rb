@@ -176,6 +176,8 @@ RSpec.describe Deliverance::Commands::Cve do
     end
 
     describe 'search subcommand' do
+      before { Deliverance::Commands::Cve::Searcher.reset_cache! }
+
       it 'shows usage when keyword is missing' do
         result = command.execute('search')
 
@@ -197,9 +199,14 @@ RSpec.describe Deliverance::Commands::Cve do
 
       it 'supports multi-word unquoted search query' do
         response = instance_double(Net::HTTPSuccess, is_a?: true, body: sample_search_json)
+        gh_response = instance_double(Net::HTTPSuccess, is_a?: true, body: '[]')
         allow(http_client).to receive(:get_response) do |uri|
-          expect(uri.query).to include('keywordSearch=ruby+on+rails')
-          response
+          if uri.to_s.include?('services.nvd.nist.gov')
+            expect(uri.query).to include('keywordSearch=ruby+on+rails')
+            response
+          else
+            gh_response
+          end
         end
 
         command.execute('search', 'ruby', 'on', 'rails')

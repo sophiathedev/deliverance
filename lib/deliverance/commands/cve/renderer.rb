@@ -86,12 +86,21 @@ module Deliverance
           end
 
           def render_search_item(index, item, keyword, output)
-            id_str = highlight(item[:id].to_s, keyword, base_color: "\e[1;36m")
+            id_text = format_item_id(item)
+            id_str = highlight(id_text, keyword, base_color: "\e[1;36m")
             badge = severity_badge(item[:severity], item[:score])
             published = item[:published] ? "  \e[90m(#{item[:published]})\e[0m" : ''
 
             output.puts "[#{index}] \e[1;36m#{id_str}\e[0m  #{badge}#{published}"
             render_search_description(item[:description], keyword, output)
+          end
+
+          def format_item_id(item)
+            if item[:ghsa_id] && item[:id] != item[:ghsa_id]
+              "#{item[:id]} (#{item[:ghsa_id]})"
+            else
+              item[:id].to_s
+            end
           end
 
           def render_search_description(description, keyword, output)
