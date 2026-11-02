@@ -87,6 +87,7 @@ module Deliverance
       CVE_PATTERN: Regexp
       API_BASE_URL: String
       CVSS_KEYS: Array[String]
+      SEVERITY_STYLES: Hash[String, String]
 
       def execute: (?String? subcommand, ?String? cve_code, *untyped) -> Hash[Symbol, untyped]?
 
@@ -101,6 +102,9 @@ module Deliverance
       def extract_severity_and_score: (Array[Hash[String, untyped]]? metrics) -> [String, untyped]
       def find_cvss_metric: (Array[Hash[String, untyped]]? metrics) -> Hash[String, untyped]?
       def render_cve: (Hash[Symbol, untyped] info) -> void
+      def render_severity: (Hash[Symbol, untyped] info) -> void
+      def severity_badge: (String severity, untyped score) -> String
+      def format_state: (String state) -> String
       def show_usage: () -> nil
     end
   end

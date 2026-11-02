@@ -16,6 +16,14 @@ module Deliverance
       API_BASE_URL = 'https://cveawg.mitre.org/api/cve'
       CVSS_KEYS = %w[cvssV3_1 cvssV3_0 cvssV4_0 cvssV2_0].freeze
 
+      SEVERITY_STYLES = {
+        'CRITICAL' => "\e[1;97;41m",
+        'HIGH' => "\e[1;97;45m",
+        'MEDIUM' => "\e[1;30;43m",
+        'LOW' => "\e[1;97;44m",
+        'NONE' => "\e[1;97;100m"
+      }.freeze
+
       def execute(subcommand = nil, cve_code = nil, *)
         case subcommand&.downcase
         when 'info'
@@ -110,13 +118,33 @@ module Deliverance
       end
 
       def render_cve(info)
-        output.puts "=== #{info[:cve_id]} ==="
-        output.puts "State:       #{info[:state]}"
-        output.puts "Severity:    #{info[:severity]} (Score: #{info[:score]})" if info[:severity] != 'N/A'
-        output.puts "Published:   #{info[:date_published]}"
-        output.puts "Assigner:    #{info[:assigner]}"
-        output.puts "Title:       #{info[:title]}" if info[:title] != 'N/A'
-        output.puts "Description: #{info[:description]}"
+        output.puts "\e[1;36m=== #{info[:cve_id]} ===\e[0m"
+        output.puts "\e[1mState:\e[0m       #{format_state(info[:state])}"
+        render_severity(info)
+        output.puts "\e[1mPublished:\e[0m   #{info[:date_published]}"
+        output.puts "\e[1mAssigner:\e[0m    \e[35m#{info[:assigner]}\e[0m"
+        output.puts "\e[1mTitle:\e[0m       \e[1m#{info[:title]}\e[0m" if info[:title] != 'N/A'
+        output.puts "\e[1mDescription:\e[0m #{info[:description]}"
+      end
+
+      def render_severity(info)
+        return if info[:severity] == 'N/A'
+
+        output.puts "\e[1mSeverity:\e[0m    #{severity_badge(info[:severity], info[:score])}"
+      end
+
+      def severity_badge(severity, score)
+        style = SEVERITY_STYLES[severity.to_s.upcase] || "\e[1;97;100m"
+        score_text = score == 'N/A' ? '' : " (Score: #{score})"
+        "#{style} #{severity}#{score_text} \e[0m"
+      end
+
+      def format_state(state)
+        case state.to_s.upcase
+        when 'PUBLISHED' then "\e[1;32m#{state}\e[0m"
+        when 'REJECTED'  then "\e[1;31m#{state}\e[0m"
+        else "\e[1;33m#{state}\e[0m"
+        end
       end
 
       def show_usage

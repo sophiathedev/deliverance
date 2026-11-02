@@ -75,7 +75,8 @@ RSpec.describe Deliverance::Commands::Cve do
         command.execute('info', '2021-44228')
 
         expect(output.string).to include('=== CVE-2021-44228 ===')
-        expect(output.string).to include('Severity:    CRITICAL (Score: 10.0)')
+        expect(output.string).to include('Severity:')
+        expect(output.string).to include("\e[1;97;41m CRITICAL (Score: 10.0) \e[0m")
         expect(output.string).to include('Remote code execution in Apache Log4j')
         expect(logger).to have_received(:info).with('Fetching CVE details for CVE-2021-44228...')
       end
