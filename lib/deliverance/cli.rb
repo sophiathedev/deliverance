@@ -51,6 +51,7 @@ module Deliverance
 
         record_history(input)
         dispatch(input)
+        output.puts
       rescue Interrupt
         logger.info(EXIT_HINT)
       end

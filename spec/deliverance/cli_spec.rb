@@ -46,7 +46,8 @@ RSpec.describe Deliverance::CLI do
 
       cli.run
 
-      expect(output.string).to include('Available commands:')
+      expect(output.string).to include("Available commands:\n")
+      expect(output.string).to end_with("\n")
     end
 
     it 'executes clear command' do
