@@ -24,11 +24,14 @@ module Deliverance
     BANNERS_DIR: String
     RESET_COLOR: String
     COLORS: Hash[Symbol, String]
+    QUOTES: Array[String]
 
     def self.styles: () -> Array[Symbol]
     def self.banner_for: (Symbol style) -> String?
     def self.random_style: (?random: untyped) -> Symbol?
+    def self.random_quote: (?random: untyped) -> String
     def self.random: (?color: bool, ?random: untyped) -> String
+    def self.info_line: (?color: bool, ?random: untyped) -> String
     def self.render: (?Symbol | String? style, ?color: bool, ?random: untyped) -> String
   end
 

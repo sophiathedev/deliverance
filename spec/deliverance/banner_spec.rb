@@ -40,6 +40,12 @@ RSpec.describe Deliverance::Banner do
       expect(output).to end_with("\e[0m")
     end
 
+    it 'includes the version and a quote in the rendered banner' do
+      output = described_class.render(:slant, color: false)
+      expect(output).to include("v#{Deliverance::VERSION}")
+      expect(output).to match(/~ ".+"/)
+    end
+
     it 'returns empty string for invalid style' do
       expect(described_class.render(:invalid_style)).to eq('')
     end

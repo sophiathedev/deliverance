@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'version'
+
 module Deliverance
   module Banner
     BANNERS_DIR = File.expand_path('banners', __dir__)
@@ -15,6 +17,18 @@ module Deliverance
       speed: "\e[1;33m",
       standard: "\e[1;32m"
     }.freeze
+
+    QUOTES = [
+      'Delivering peace of mind, one exploit at a time.',
+      'Special delivery: zero days and zero bugs (hopefully).',
+      'Signed, sealed, delivered - vulnerabilities revealed.',
+      'There is no place like 127.0.0.1.',
+      'Because every bug deserves a swift deliverance.',
+      "Keep calm and 'scan' on.",
+      'Delivering clean code and fixing CVEs since day one.',
+      'Drop packets, not expectations.',
+      'It works on my machine, delivering to yours.'
+    ].freeze
 
     class << self
       def styles
@@ -35,8 +49,20 @@ module Deliverance
         styles.sample(random: random)
       end
 
+      def random_quote(random: Random)
+        QUOTES.sample(random: random)
+      end
+
       def random(color: true, random: Random)
         render(nil, color: color, random: random)
+      end
+
+      def info_line(color: true, random: Random)
+        version_tag = "v#{Deliverance::VERSION}"
+        quote = random_quote(random: random)
+        return "  #{version_tag} ~ \"#{quote}\"" unless color
+
+        "  \e[2;37m#{version_tag}\e[0m \e[90m~\e[0m \e[3;37m\"#{quote}\"\e[0m"
       end
 
       def render(style = nil, color: true, random: Random)
@@ -44,10 +70,8 @@ module Deliverance
         raw_art = selected ? banner_for(selected) : nil
         return '' unless raw_art
 
-        return raw_art unless color
-
-        palette_color = COLORS.fetch(selected, "\e[1;36m")
-        "#{palette_color}#{raw_art}#{RESET_COLOR}"
+        art = color ? "#{COLORS.fetch(selected, "\e[1;36m")}#{raw_art}#{RESET_COLOR}" : raw_art
+        "#{art}\n#{info_line(color: color, random: random)}"
       end
     end
   end
