@@ -82,5 +82,22 @@ RSpec.describe Deliverance::Commands::Cve::Pager do
       expect(output.string).to include('[11]')
       expect(output.string).to include('CVE-11')
     end
+
+    it 'prefetches the next page automatically while on current page' do
+      client = class_double(Net::HTTP)
+      page2_data = { total: 25, items: [{ id: 'CVE-11', description: 'Page 2 item' }] }
+      allow(Deliverance::Commands::Cve::Searcher).to receive(:search).and_return(page2_data)
+
+      keys = ['q']
+      interactive_input = instance_double(IO, tty?: true)
+      allow(interactive_input).to receive(:getch) do
+        sleep 0.05
+        keys.shift
+      end
+
+      described_class.paginate(large_results, 'test', { output: output, input: interactive_input }, client)
+      expect(Deliverance::Commands::Cve::Searcher).to have_received(:search)
+        .with('test', client, limit: 10, start_index: 10)
+    end
   end
 end

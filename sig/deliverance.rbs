@@ -130,6 +130,7 @@ module Deliverance
         PAGE_SIZE: Integer
         CLEAR_CODE: String
         PAGE_NAV_KEYS: Array[Symbol]
+        KEY_MAP: Hash[String, Symbol]
 
         def self.paginate: (Hash[Symbol, untyped] initial_results, String keyword, Hash[Symbol, untyped] context, ?untyped client) -> Hash[Symbol, untyped]
         def self.interactive?: (untyped input) -> bool

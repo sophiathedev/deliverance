@@ -9,6 +9,11 @@ module Deliverance
         PAGE_SIZE = 10
         CLEAR_CODE = "\e[H\e[2J"
         PAGE_NAV_KEYS = %i[right left].freeze
+        KEY_MAP = {
+          'q' => :quit, 'Q' => :quit, "\u0003" => :quit,
+          'l' => :right, 'L' => :right, 'n' => :right, 'N' => :right,
+          'h' => :left, 'H' => :left, 'p' => :left, 'P' => :left
+        }.freeze
 
         class << self
           def paginate(initial_results, keyword, context, client = Net::HTTP)
@@ -38,7 +43,7 @@ module Deliverance
             when "\e[C", "\eOC" then :right
             when "\e[D", "\eOD" then :left
             when "\e" then read_escape_sequence(input)
-            else map_simple_key(char)
+            else KEY_MAP.fetch(char, :unknown)
             end
           end
 
@@ -48,10 +53,12 @@ module Deliverance
             pages = { 1 => initial_results }
             page = 1
             out = context[:output] || $stdout
+            prefetch = nil
 
             loop do
-              results = fetch_page(keyword, client, page, pages)
-              render_page(results, keyword, out, page, total_pages)
+              prefetch&.join if prefetch&.alive?
+              render_page(fetch_page(keyword, client, page, pages), keyword, out, page, total_pages)
+              prefetch = prefetch_next(keyword, client, page + 1, total_pages, pages)
               out.print pager_prompt(page, total_pages, initial_results[:total])
               key = read_key(context[:input] || $stdin)
               break if key == :quit || key.nil?
@@ -59,8 +66,17 @@ module Deliverance
               page = next_page_for(key, page, total_pages)
               out.print CLEAR_CODE if PAGE_NAV_KEYS.include?(key)
             end
+            prefetch&.kill if prefetch&.alive?
             out.puts
             initial_results
+          end
+
+          def prefetch_next(keyword, client, next_page, total_pages, pages)
+            return nil if next_page > total_pages || pages.key?(next_page)
+
+            Thread.new do
+              pages[next_page] ||= fetch_page(keyword, client, next_page, pages)
+            end
           end
 
           def fetch_page(keyword, client, page, pages)
@@ -98,15 +114,6 @@ module Deliverance
             end
           rescue StandardError
             :escape
-          end
-
-          def map_simple_key(char)
-            case char
-            when 'q', 'Q', "\u0003" then :quit
-            when 'l', 'L', 'n', 'N' then :right
-            when 'h', 'H', 'p', 'P' then :left
-            else :unknown
-            end
           end
         end
       end
