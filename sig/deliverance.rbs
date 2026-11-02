@@ -82,6 +82,27 @@ module Deliverance
 
       def execute: (*untyped) -> void
     end
+
+    class Cve < Base
+      CVE_PATTERN: Regexp
+      API_BASE_URL: String
+      CVSS_KEYS: Array[String]
+
+      def execute: (?String? subcommand, ?String? cve_code, *untyped) -> Hash[Symbol, untyped]?
+
+      private
+
+      def handle_info: (String? raw_code) -> Hash[Symbol, untyped]?
+      def normalize_cve_id: (String? raw_code) -> String?
+      def fetch_and_render_cve: (String cve_id) -> Hash[Symbol, untyped]?
+      def fetch_cve_record: (String cve_id) -> Hash[String, untyped]?
+      def http_get: (URI::Generic uri) -> untyped
+      def parse_cve_record: (String cve_id, Hash[String, untyped] data) -> Hash[Symbol, untyped]
+      def extract_severity_and_score: (Array[Hash[String, untyped]]? metrics) -> [String, untyped]
+      def find_cvss_metric: (Array[Hash[String, untyped]]? metrics) -> Hash[String, untyped]?
+      def render_cve: (Hash[Symbol, untyped] info) -> void
+      def show_usage: () -> nil
+    end
   end
 
   class CLI

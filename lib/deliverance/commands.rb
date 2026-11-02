@@ -41,6 +41,7 @@ module Deliverance
         register(Exit)
         register(Scan)
         register(Clear)
+        register(Cve)
       end
     end
   end
@@ -51,3 +52,4 @@ require_relative 'commands/help'
 require_relative 'commands/exit'
 require_relative 'commands/scan'
 require_relative 'commands/clear'
+require_relative 'commands/cve'
