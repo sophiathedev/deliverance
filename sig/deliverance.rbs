@@ -108,16 +108,34 @@ module Deliverance
         def self.http_get: (URI::Generic uri, untyped client) -> untyped
       end
 
+      module Searcher
+        SEARCH_API_URL: String
+        DEFAULT_RESULTS_LIMIT: Integer
+
+        def self.search: (String keyword, ?untyped client, ?Integer limit) -> Hash[Symbol, untyped]?
+      end
+
+      module Renderer
+        SEVERITY_STYLES: Hash[String, String]
+
+        def self.render_advisory: (Hash[Symbol, untyped] info, untyped output) -> void
+        def self.render_search: (Hash[Symbol, untyped] results, String keyword, untyped output) -> void
+        def self.highlight: (String? text, String? keyword, ?base_color: String?) -> String
+        def self.severity_badge: (untyped severity, untyped score) -> String
+        def self.format_state: (String state) -> String
+      end
+
       CVE_PATTERN: Regexp
       GHSA_PATTERN: Regexp
       CVE_API_URL: String
       CVSS_KEYS: Array[String]
       SEVERITY_STYLES: Hash[String, String]
 
-      def execute: (?String? subcommand, ?String? code, *untyped) -> Hash[Symbol, untyped]?
+      def execute: (?String? subcommand, *untyped) -> Hash[Symbol, untyped]?
 
       private
 
+      def handle_search: (String keyword) -> Hash[Symbol, untyped]?
       def handle_info: (String? raw_code) -> Hash[Symbol, untyped]?
       def detect_identifier: (String? code) -> [Symbol, String]?
       def fetch_cve: (String cve_id) -> Hash[String, untyped]?
@@ -128,10 +146,6 @@ module Deliverance
       def parse_ghsa: (String ghsa_id, Hash[String, untyped] data) -> Hash[Symbol, untyped]
       def extract_ghsa_packages: (Hash[String, untyped] data) -> String?
       def extract_cvss: (Array[Hash[String, untyped]]? metrics) -> [String, untyped]
-      def render_advisory: (Hash[Symbol, untyped] info) -> void
-      def render_metadata: (Hash[Symbol, untyped] info) -> void
-      def render_severity: (Hash[Symbol, untyped] info) -> void
-      def format_state: (String state) -> String
       def show_usage: () -> nil
     end
   end

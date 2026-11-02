@@ -5,36 +5,51 @@ require 'json'
 require 'uri'
 require_relative 'base'
 require_relative 'cve/ghsa_fetcher'
+require_relative 'cve/searcher'
+require_relative 'cve/renderer'
 
 module Deliverance
   module Commands
     class Cve < Base
       command_name 'cve'
-      description 'Query CVE / GHSA vulnerability information'
-      usage 'cve info <CVE-ID | GHSA-ID>'
+      description 'Query or search CVE / GHSA vulnerability information'
+      usage 'cve <info <ID> | search <keyword>>'
 
       CVE_PATTERN = /\A(?:CVE-)?(\d{4}-\d{4,})\z/i
       GHSA_PATTERN = /\A(?:GHSA-)?([a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4})\z/i
       CVE_API_URL = 'https://cveawg.mitre.org/api/cve'
       CVSS_KEYS = %w[cvssV3_1 cvssV3_0 cvssV4_0 cvssV2_0].freeze
+      SEVERITY_STYLES = Renderer::SEVERITY_STYLES
 
-      SEVERITY_STYLES = {
-        'CRITICAL' => "\e[1;97;41m",
-        'HIGH' => "\e[1;97;45m",
-        'MEDIUM' => "\e[1;30;43m",
-        'LOW' => "\e[1;97;44m",
-        'NONE' => "\e[1;97;100m"
-      }.freeze
-
-      def execute(subcommand = nil, code = nil, *)
-        if subcommand&.downcase == 'info'
-          handle_info(code)
+      def execute(subcommand = nil, *args)
+        case subcommand&.downcase
+        when 'info'
+          handle_info(args.first)
+        when 'search'
+          handle_search(args.join(' ').strip)
         else
           show_usage
         end
       end
 
       private
+
+      def handle_search(keyword)
+        if keyword.empty?
+          output.puts 'Usage: cve search <keyword>'
+          return nil
+        end
+
+        logger.info("Searching CVEs matching '#{keyword}'...")
+        results = Searcher.search(keyword, http_client)
+        unless results
+          output.puts "Error searching CVEs for '#{keyword}'"
+          return nil
+        end
+
+        Renderer.render_search(results, keyword, output)
+        results
+      end
 
       def handle_info(raw_code)
         type, id = detect_identifier(raw_code)
@@ -49,7 +64,7 @@ module Deliverance
         return nil unless data
 
         info = type == :cve ? parse_cve(id, data) : parse_ghsa(id, data)
-        render_advisory(info)
+        Renderer.render_advisory(info, output)
         info
       end
 
@@ -142,43 +157,13 @@ module Deliverance
         [cvss&.dig('baseSeverity') || 'N/A', cvss&.dig('baseScore') || 'N/A']
       end
 
-      def render_advisory(info)
-        output.puts "\e[1;36m=== #{info[:id]} ===\e[0m"
-        output.puts "\e[1mMapped CVE:\e[0m  #{info[:mapped_cve]}" if info[:mapped_cve]
-        output.puts "\e[1mState:\e[0m       #{format_state(info[:state])}"
-        render_severity(info)
-        render_metadata(info)
-        output.puts "\e[1mTitle:\e[0m       \e[1m#{info[:title]}\e[0m" if info[:title] != 'N/A'
-        output.puts "\e[1mDescription:\e[0m #{info[:description]}"
-      end
-
-      def render_metadata(info)
-        output.puts "\e[1mPublished:\e[0m   #{info[:published]}"
-        output.puts "\e[1mPackages:\e[0m    \e[36m#{info[:packages]}\e[0m" if info[:packages]
-        output.puts "\e[1mAssigner:\e[0m    \e[35m#{info[:assigner]}\e[0m" if info[:assigner] != 'N/A'
-      end
-
-      def render_severity(info)
-        return if info[:severity] == 'N/A'
-
-        style = SEVERITY_STYLES[info[:severity].to_s.upcase] || "\e[1;97;100m"
-        score_text = info[:score] == 'N/A' ? '' : " (Score: #{info[:score]})"
-        output.puts "\e[1mSeverity:\e[0m    #{style} #{info[:severity]}#{score_text} \e[0m"
-      end
-
-      def format_state(state)
-        case state.to_s.upcase
-        when 'PUBLISHED' then "\e[1;32m#{state}\e[0m"
-        when 'REJECTED' then "\e[1;31m#{state}\e[0m"
-        else "\e[1;33m#{state}\e[0m"
-        end
-      end
-
       def show_usage
         output.puts 'Usage: cve info <CVE-ID | GHSA-ID>'
+        output.puts '       cve search <keyword>'
         output.puts ''
         output.puts 'Subcommands:'
-        output.puts '  info <ID>    Fetch details for a CVE or GitHub Security Advisory (GHSA)'
+        output.puts '  info <ID>         Fetch details for a CVE or GitHub Security Advisory (GHSA)'
+        output.puts '  search <keyword>  Search CVE database by keyword'
         nil
       end
     end

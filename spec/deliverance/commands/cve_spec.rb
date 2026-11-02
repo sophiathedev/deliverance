@@ -40,6 +40,24 @@ RSpec.describe Deliverance::Commands::Cve do
     )
   end
 
+  def sample_search_json
+    JSON.generate(
+      totalResults: 1,
+      vulnerabilities: [
+        {
+          cve: {
+            id: 'CVE-2021-44228',
+            published: '2021-12-10T00:00:00.000',
+            descriptions: [{ lang: 'en', value: 'Apache Log4j2 JNDI exploit in log4j' }],
+            metrics: {
+              cvssMetricV31: [{ cvssData: { baseSeverity: 'CRITICAL', baseScore: 10.0 } }]
+            }
+          }
+        }
+      ]
+    )
+  end
+
   describe '#execute' do
     it 'shows usage when called without arguments' do
       command.execute
@@ -154,6 +172,61 @@ RSpec.describe Deliverance::Commands::Cve do
 
         expect(result).to be_nil
         expect(output.string).to include('Error fetching CVE-2021-44228: Connection refused')
+      end
+    end
+
+    describe 'search subcommand' do
+      it 'shows usage when keyword is missing' do
+        result = command.execute('search')
+
+        expect(result).to be_nil
+        expect(output.string).to include('Usage: cve search <keyword>')
+      end
+
+      it 'fetches and formats CVE search results with red keyword highlight' do
+        response = instance_double(Net::HTTPSuccess, is_a?: true, body: sample_search_json)
+        allow(http_client).to receive(:get_response).and_return(response)
+
+        result = command.execute('search', 'log4j')
+
+        expect(result[:total]).to eq(1)
+        expect(output.string).to include("Found 1 CVE(s) matching 'log4j':")
+        expect(output.string).to include("\e[1;31mlog4j\e[0m")
+        expect(output.string).to include('CRITICAL (Score: 10.0)')
+      end
+
+      it 'supports multi-word unquoted search query' do
+        response = instance_double(Net::HTTPSuccess, is_a?: true, body: sample_search_json)
+        allow(http_client).to receive(:get_response) do |uri|
+          expect(uri.query).to include('keywordSearch=ruby+on+rails')
+          response
+        end
+
+        command.execute('search', 'ruby', 'on', 'rails')
+        expect(output.string).to include("matching 'ruby on rails':")
+      end
+
+      it 'handles empty search results' do
+        empty_res = instance_double(
+          Net::HTTPSuccess,
+          is_a?: true,
+          body: JSON.generate(totalResults: 0, vulnerabilities: [])
+        )
+        allow(http_client).to receive(:get_response).and_return(empty_res)
+
+        result = command.execute('search', 'nonexistent_lib')
+
+        expect(result[:items]).to be_empty
+        expect(output.string).to include("No CVEs found matching 'nonexistent_lib'")
+      end
+
+      it 'handles search network errors gracefully' do
+        allow(http_client).to receive(:get_response).and_raise(SocketError, 'Connection failed')
+
+        result = command.execute('search', 'log4j')
+
+        expect(result).to be_nil
+        expect(output.string).to include("Error searching CVEs for 'log4j'")
       end
     end
 
