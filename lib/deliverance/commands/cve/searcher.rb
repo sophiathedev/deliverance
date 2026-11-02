@@ -13,9 +13,9 @@ module Deliverance
         DEFAULT_RESULTS_LIMIT = 10
 
         class << self
-          def search(keyword, client = Net::HTTP, limit = DEFAULT_RESULTS_LIMIT)
+          def search(keyword, client = Net::HTTP, limit: DEFAULT_RESULTS_LIMIT, start_index: 0)
             encoded = CGI.escape(keyword.to_s.strip)
-            uri = URI("#{SEARCH_API_URL}?keywordSearch=#{encoded}&resultsPerPage=#{limit}")
+            uri = URI("#{SEARCH_API_URL}?keywordSearch=#{encoded}&resultsPerPage=#{limit}&startIndex=#{start_index}")
             res = http_get(uri, client)
             return nil unless res.is_a?(Net::HTTPSuccess)
 

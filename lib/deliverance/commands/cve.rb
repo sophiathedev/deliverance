@@ -7,6 +7,7 @@ require_relative 'base'
 require_relative 'cve/ghsa_fetcher'
 require_relative 'cve/searcher'
 require_relative 'cve/renderer'
+require_relative 'cve/pager'
 
 module Deliverance
   module Commands
@@ -47,8 +48,7 @@ module Deliverance
           return nil
         end
 
-        Renderer.render_search(results, keyword, output)
-        results
+        Pager.paginate(results, keyword, context, http_client)
       end
 
       def handle_info(raw_code)

@@ -73,6 +73,10 @@ module Deliverance
       def output
         context[:output] || $stdout
       end
+
+      def input
+        context[:input] || $stdin
+      end
     end
   end
 end

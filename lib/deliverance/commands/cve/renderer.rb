@@ -24,16 +24,23 @@ module Deliverance
             output.puts "\e[1mDescription:\e[0m #{info[:description]}"
           end
 
-          def render_search(results, keyword, output)
+          def render_search(results, keyword, output, pagination: {})
             items = results[:items] || []
             if items.empty?
               output.puts "No CVEs found matching '#{keyword}'"
               return
             end
 
-            output.puts "Found #{results[:total]} CVE(s) matching '#{keyword}':\n\n"
+            total_pages = pagination[:total_pages] || 1
+            start_index = pagination[:start_index] || 0
+            page = pagination[:page] || 1
+
+            header = "Found #{results[:total]} CVE(s) matching '#{keyword}'"
+            header += " (Page #{page} of #{total_pages})" if total_pages > 1
+            output.puts "#{header}:\n\n"
+
             items.each_with_index do |item, idx|
-              render_search_item(idx + 1, item, keyword, output)
+              render_search_item(start_index + idx + 1, item, keyword, output)
             end
           end
 

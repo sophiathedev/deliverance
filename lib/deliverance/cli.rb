@@ -117,7 +117,8 @@ module Deliverance
       {
         cli: self,
         logger: logger,
-        output: output
+        output: output,
+        input: $stdin
       }
     end
   end

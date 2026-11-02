@@ -58,6 +58,7 @@ module Deliverance
       def run_command: (String | Symbol name, *untyped, **untyped) -> untyped
       def logger: () -> Logger
       def output: () -> untyped
+      def input: () -> untyped
       def context: () -> Hash[Symbol, untyped]
 
       private
@@ -112,17 +113,27 @@ module Deliverance
         SEARCH_API_URL: String
         DEFAULT_RESULTS_LIMIT: Integer
 
-        def self.search: (String keyword, ?untyped client, ?Integer limit) -> Hash[Symbol, untyped]?
+        def self.search: (String keyword, ?untyped client, ?limit: Integer, ?start_index: Integer) -> Hash[Symbol, untyped]?
       end
 
       module Renderer
         SEVERITY_STYLES: Hash[String, String]
 
         def self.render_advisory: (Hash[Symbol, untyped] info, untyped output) -> void
-        def self.render_search: (Hash[Symbol, untyped] results, String keyword, untyped output) -> void
+        def self.render_search: (Hash[Symbol, untyped] results, String keyword, untyped output, ?pagination: Hash[Symbol, Integer]) -> void
         def self.highlight: (String? text, String? keyword, ?base_color: String?) -> String
         def self.severity_badge: (untyped severity, untyped score) -> String
         def self.format_state: (String state) -> String
+      end
+
+      module Pager
+        PAGE_SIZE: Integer
+        CLEAR_CODE: String
+        PAGE_NAV_KEYS: Array[Symbol]
+
+        def self.paginate: (Hash[Symbol, untyped] initial_results, String keyword, Hash[Symbol, untyped] context, ?untyped client) -> Hash[Symbol, untyped]
+        def self.interactive?: (untyped input) -> bool
+        def self.read_key: (untyped input) -> Symbol?
       end
 
       CVE_PATTERN: Regexp
