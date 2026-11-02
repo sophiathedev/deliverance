@@ -20,6 +20,18 @@ module Deliverance
   def self.logger: () -> Logger
   def self.logger=: (Logger logger) -> Logger
 
+  module Banner
+    BANNERS_DIR: String
+    RESET_COLOR: String
+    COLORS: Hash[Symbol, String]
+
+    def self.styles: () -> Array[Symbol]
+    def self.banner_for: (Symbol style) -> String?
+    def self.random_style: (?random: untyped) -> Symbol?
+    def self.random: (?color: bool, ?random: untyped) -> String
+    def self.render: (?Symbol | String? style, ?color: bool, ?random: untyped) -> String
+  end
+
   module Commands
     def self.registry: () -> Hash[String, singleton(Base)]
     def self.register: (singleton(Base) command_class) -> void
@@ -131,14 +143,16 @@ module Deliverance
     @logger: Logger
     @output: untyped
     @history_file: String?
+    @banner: bool
     @line_cnt: Integer
 
     def self.start: () -> void
-    def initialize: (?input_reader: untyped, ?logger: Logger, ?output: untyped, ?history_file: String?) -> void
+    def initialize: (?input_reader: untyped, ?logger: Logger, ?output: untyped, ?history_file: String?, ?banner: bool) -> void
     def run: () -> void
 
     private
 
+    def print_banner: () -> void
     def repl_loop: () -> void
     def record_history: (String input) -> void
     def load_history: () -> void

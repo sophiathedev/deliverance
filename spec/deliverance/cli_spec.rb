@@ -28,6 +28,29 @@ RSpec.describe Deliverance::CLI do
   end
 
   describe '#run' do
+    it 'prints a deliverance banner on startup' do
+      allow(reader).to receive(:readline).and_return('exit')
+
+      cli.run
+
+      expect(output.string).to include("\e[0m\n\n")
+    end
+
+    it 'omits banner when banner option is false' do
+      no_banner_cli = described_class.new(
+        input_reader: reader,
+        logger: logger,
+        output: output,
+        history_file: nil,
+        banner: false
+      )
+      allow(reader).to receive(:readline).and_return('exit')
+
+      no_banner_cli.run
+
+      expect(output.string).to be_empty
+    end
+
     it 'terminates when input is nil (Ctrl+D)' do
       allow(reader).to receive(:readline).with('deli:001> ', false).and_return(nil)
 

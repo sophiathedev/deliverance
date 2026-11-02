@@ -2,6 +2,7 @@
 
 require 'readline'
 require 'shellwords'
+require_relative 'banner'
 
 module Deliverance
   class CLI
@@ -18,17 +19,20 @@ module Deliverance
       input_reader: Readline,
       logger: Deliverance.logger,
       output: $stdout,
-      history_file: DEFAULT_HISTORY_FILE
+      history_file: DEFAULT_HISTORY_FILE,
+      banner: true
     )
       @input_reader = input_reader
       @logger = logger
       @output = output
       @history_file = history_file
+      @banner = banner
       @line_cnt = 0
     end
 
     def run
       load_history
+      print_banner
       catch :exit_repl do
         repl_loop
       end
@@ -38,7 +42,14 @@ module Deliverance
 
     private
 
-    attr_reader :input_reader, :logger, :output, :history_file
+    attr_reader :input_reader, :logger, :output, :history_file, :banner
+
+    def print_banner
+      return unless banner
+
+      output.puts Banner.random
+      output.puts
+    end
 
     def repl_loop
       loop do

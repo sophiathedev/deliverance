@@ -4,6 +4,7 @@ require 'logger'
 
 require_relative 'deliverance/version'
 require_relative 'deliverance/errors'
+require_relative 'deliverance/banner'
 require_relative 'deliverance/commands'
 require_relative 'deliverance/cli'
 
